@@ -1,0 +1,14 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+override.tf
+override.tf.json
+*.auto.tfvars
+.terraform.tfstate.lock.info
+
+# Lambda build artifact
+build/
+remediation_function.zip

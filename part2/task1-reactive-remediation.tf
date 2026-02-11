@@ -37,17 +37,28 @@ resource "aws_cloudwatch_event_rule" "security_group_drift" {
 }
 
 # ============================================================================
+# Lambda - Build zip from source
+# ============================================================================
+
+data "archive_file" "remediation_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/lambda/remediation"
+  output_path = "${path.module}/build/remediation_function.zip"
+}
+
+# ============================================================================
 # Lambda Function - Performs automated remediation
 # ============================================================================
 
 resource "aws_lambda_function" "remediation" {
-  filename      = "remediation_function.zip"
-  function_name = "security-group-remediator"
-  role          = aws_iam_role.lambda_remediation.arn
-  handler       = "remediation.lambda_handler"
-  runtime       = "python3.12"
-  timeout       = 60
-  memory_size   = 256
+  filename         = data.archive_file.remediation_zip.output_path
+  source_code_hash = data.archive_file.remediation_zip.output_base64sha256
+  function_name    = "security-group-remediator"
+  role             = aws_iam_role.lambda_remediation.arn
+  handler          = "remediation.lambda_handler"
+  runtime          = "python3.12"
+  timeout          = 60
+  memory_size      = 256
   
   environment {
     variables = {
